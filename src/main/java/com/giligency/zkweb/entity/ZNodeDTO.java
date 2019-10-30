@@ -10,7 +10,7 @@ public class ZNodeDTO {
     private String nodeName;
     private String absolutePath;
     private String zkAddress;
-    private ZNodeInfoVO zNodeInfoVO;
+    private ZNodeInfoDO zNodeInfoDO;
     private List<ZNodeDTO> children;
     private List<String> childrenName;
 }

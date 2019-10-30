@@ -12,7 +12,6 @@ let columns = [{
     title: "超时时间"
 }];
 let bTable = new BTable("#zkList", "./data/data1.json", columns);
-// bTable.setLocalData(localData);
 bTable.init();
 
 

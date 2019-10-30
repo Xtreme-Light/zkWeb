@@ -5,8 +5,11 @@ import org.apache.zookeeper.data.ACL;
 
 import java.util.List;
 
+/**
+ * zookeeper 的节点领域对象
+ */
 @Data
-public class ZNodeInfoVO {
+public class ZNodeInfoDO {
     private String path;
     private String params;
     private String data;

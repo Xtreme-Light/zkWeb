@@ -1,6 +1,6 @@
 package com.giligency.zkweb.unit;
 
-import com.sun.org.apache.xpath.internal.XPath;
+import com.giligency.zkweb.entity.RetJson;
 import org.junit.jupiter.api.Test;
 
 public class UnitTest {
@@ -17,5 +17,14 @@ public class UnitTest {
             System.out.println(substring);
             test4Split(substring);
         }
+    }
+
+    @Test
+    public void test4RetJson() {
+        final RetJson retSuccess = RetJson.retSuccess;
+        System.out.println(retSuccess);
+        retSuccess.setMessage("1111");
+        System.out.println(retSuccess);
+
     }
 }

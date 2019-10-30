@@ -1,7 +1,8 @@
 package com.giligency.zkweb.zk;
 
 import com.giligency.zkweb.entity.ZNodeDTO;
-import com.giligency.zkweb.entity.ZNodeInfoVO;
+import com.giligency.zkweb.entity.ZNodeInfoDO;
+import com.giligency.zkweb.exception.NerException;
 import com.giligency.zkweb.util.mapper.BeanMapper;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,10 +61,26 @@ public class ZkWebClient implements Watcher {
                 connect();
             } catch (IOException | InterruptedException e) {
                 log.error("zk重连失败", e);
+                NerException.throwException("重新连接zk集群" + zkServerList + "失败！！！", e);
             }
         }
     }
 
+    public ZkWebClient updateInfo(String zkServerList, String zkAuthInfo, int serviceTimeout) {
+
+        if ((!zkServerList.equals(this.zkServerList) || !zkAuthInfo.equals(this.zkAuthInfo) || this.defaultServiceTimeout != (serviceTimeout == 0 ? 3000 : serviceTimeout))) {
+            close();
+            this.zkServerList = zkServerList;
+            this.zkAuthInfo = zkAuthInfo;
+            this.defaultServiceTimeout = (serviceTimeout == 0 ? 3000 : serviceTimeout);
+            try {
+                this.zooKeeper = new ZooKeeper(this.zkServerList, this.defaultServiceTimeout, this);
+            } catch (IOException e) {
+                NerException.throwException("根据zk集群地址" + zkServerList + "无法连接zookeeper", e);
+            }
+        }
+        return this;
+    }
     /**
      * 获取指定路径下的子节点
      *
@@ -128,18 +145,18 @@ public class ZkWebClient implements Watcher {
                 zNodeDTO.setNodeName(split[split.length - 1]);
                 zNodeDTO.setParentName(split[split.length - 2]);
             }
-            final ZNodeInfoVO zNodeInfoVO = BeanMapper.map(exists, ZNodeInfoVO.class);
-            zNodeInfoVO.setPath(absolutePath);
+            final ZNodeInfoDO zNodeInfoDO = BeanMapper.map(exists, ZNodeInfoDO.class);
+            zNodeInfoDO.setPath(absolutePath);
             //zNodeInfoVO.setParams(zk.get);
             final byte[] data = zooKeeper.getData(absolutePath, true, stat);
             if (Objects.nonNull(data) && data.length != 0) {
-                zNodeInfoVO.setData(new String(data));
+                zNodeInfoDO.setData(new String(data));
             } else {
-                zNodeInfoVO.setData("");
+                zNodeInfoDO.setData("");
             }
             final List<ACL> acl = zooKeeper.getACL(absolutePath, stat);
-            zNodeInfoVO.setAclList(acl);
-            zNodeDTO.setZNodeInfoVO(zNodeInfoVO);
+            zNodeInfoDO.setAclList(acl);
+            zNodeDTO.setZNodeInfoDO(zNodeInfoDO);
             final List<String> children = zooKeeper.getChildren(absolutePath, false);
             zNodeDTO.setChildrenName(children);
             return zNodeDTO;

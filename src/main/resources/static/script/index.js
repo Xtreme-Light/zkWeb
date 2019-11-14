@@ -1,21 +1,22 @@
 import {BTable} from "./btable.js";
-
-let columns = [{
-    field: "zkName",
-    title: "zk名称",
-    width: "150px"
-}, {
-    field: "zkServerList",
-    title: "zk集群地址"
-},{
-    field: "timeout",
-    title: "超时时间"
-}];
-let bTable = new BTable("#zkList", "./data/data1.json", columns);
-bTable.init();
-
-
 // 对与zTree开始配置
+let nodeDataFilter = (treeId, parentNode, responseData) => {
+    if (responseData && responseData.code === "200") {
+        let children = responseData.data;
+        let nodes = [];
+        for (let child of children) {
+            let node = {};
+            node.zkAddress = parentNode.zkAddress;
+            node.absolutePath = (parentNode.absolutePath === "/") ? "/" + child : parentNode.absolutePath + "/" + child;
+            node.name = child;
+            node.isParent = true;
+            nodes.push(node);
+        }
+        return nodes;
+
+    }
+    let data = responseData.data;
+};
 let setting = {
     data: {
         simpleData: {
@@ -46,40 +47,86 @@ let setting = {
     },
     async: {
         //发送请求的时候，附加的参数，也可以设置别名，这里咩有设置
-        autoParam: ["absolutePath"],
+        autoParam: ["absolutePath", "zkAddress"],
         contentType: "application/json",
         dataType: "text",
         //异步加载
         enable: true,
-        type: "get",
-        url: "getTargetNodeChildren"
+        type: "post",
+        url: "/zookeeper/node/getTargetNodeChildren",
+        dataFilter: nodeDataFilter
     }
 };
 
-/*let zNodes =[
-    {
-        name:"/",
-        open:false,
-        absolutePath: "/",
-        parentPathName: "0",
+class Page {
+    constructor() {
+        //页面的中Table表的row 行点击选中后触发的事件
+        this.rowClick();
     }
-];*/
-let zNodes = [
-    {"absolutePath": "/", "name": "/", "parentAbsolutePath": "/"},
-    {"absolutePath": "/root", "name": "/root", "parentAbsolutePath": "/"},
-    {"absolutePath": "/root1", "name": "/root1", "parentAbsolutePath": "/"},
-    {"absolutePath": "/root2", "name": "/root2", "parentAbsolutePath": "/"},
-    {"absolutePath": "/root1/root11", "name": "/root11", "parentAbsolutePath": "/root1"},
-    {"absolutePath": "/root1/root12", "name": "/root12", "parentAbsolutePath": "/root1"},
-    {"absolutePath": "/root1/root13", "name": "/root13", "parentAbsolutePath": "/root1"},
-    {"absolutePath": "/root2/root21", "name": "/root21", "parentAbsolutePath": "/root2"},
-    {"absolutePath": "/root2/root22", "name": "/root22", "parentAbsolutePath": "/root2"},
-    {"absolutePath": "/root2/root23", "name": "/root23", "parentAbsolutePath": "/root2"},
 
+    rowClick() {
+        $('#zkList').on('click-row.bs.table', function (e, row, $element) {
+            let $children = $('#zkList ').find("tr");
+            for (let i = 0; i < $children.length; i++) {
+                $children[i].bgColor = '#FFFFFF';
+            }
+            $element[0].bgColor = '#FFEE88';
+            $('.text-loader-content').remove();
+            $element[0].bgColor = '#FFEE88';
+            let zk_address = row.zkServerList;
+            $.fn.zTree.destroy(".zTree");
+            let newZnodeTree = [
+                {"absolutePath": "/", "name": "/", "parentAbsolutePath": "/", "zkAddress": zk_address, "isParent": true}
+            ];
+            $.fn.zTree.init($('.zTree'), setting, newZnodeTree);
+        });
+    };
+
+    /**
+     * 请求节点后返回的数据过滤
+     * @param treeId
+     * @param parentNode
+     * @param responseData
+     */
+
+}
+
+
+let page = new Page();
+
+let columns = [{
+    field: "zkName",
+    title: "zk名称",
+    width: "150px"
+}, {
+    field: "zkServerList",
+    title: "zk集群地址"
+}, {
+    field: "timeout",
+    title: "超时时间"
+}, {
+    title: "配置信息",
+    formatter: function (value, row, index, field) {
+        return "";
+    }
+}];
+let bTable = new BTable("#zkList", "./data/data1.json", columns);
+bTable.init();
+
+
+let zNodes = [
+    {
+        "absolutePath": "/",
+        "name": "/",
+        "parentAbsolutePath": "/",
+        "zkAddress": "20.26.25.44:2183,20.26.25.45:2183,20.26.25.46:2183",
+        "isParent": true
+    },
 
 
 ];
 
-$(document).ready(function(){
+
+$(document).ready(function () {
     $.fn.zTree.init($(".zTree"), setting, zNodes);
 });

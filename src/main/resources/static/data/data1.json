@@ -1,0 +1,23 @@
+{
+  "code": "200",
+  "message": null,
+  "data": {
+    "zkInfo": [
+      {
+        "zkName": "本机测试zk地址1",
+        "zkServerList": "127.0.0.1:2181",
+        "timeout": "3000"
+      },{
+        "zkName": "测试环境zk",
+        "zkServerList": "20.26.25.44:2183,20.26.25.45:2183,20.26.25.46:2183",
+        "timeout": "3000"
+      },
+      {
+        "zkName": "新业务测试环境zk",
+        "zkServerList": "20.26.25.37:2183,20.26.25.38:2183,20.26.25.39:2183",
+        "timeout": "3000"
+      }
+    ],
+    "totalElements": 3
+  }
+}

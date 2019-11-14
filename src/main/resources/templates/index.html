@@ -5,16 +5,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap -->
-    <link href="../static/css/bootstrap/bootstrap.min.css" th:href="/resources/static/css/bootstrap/bootstrap.min.css"
+    <link href="../static/css/bootstrap/bootstrap.min.css" th:href="@{/css/bootstrap/bootstrap.min.css}"
           rel="stylesheet">
     <link href="../static/css/fontawesome/v5.11.2/all.min.css"
-          th:href="/resources/static/css/fontawesome/v5.11.2/all.min.css" rel="stylesheet">
+          rel="stylesheet" th:href="@{/css/fontawesome/v5.11.2/all.min.css}">
     <link href="../static/css/bootstrap-table/bootstrap-table.min.css"
-          th:href="/resources/static/css/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+          rel="stylesheet" th:href="@{/css/bootstrap-table/bootstrap-table.min.css}">
     <link href="../static/css/jQuery-Growl/jquery.growl.css"
-          th:href="/resources/static/css/jQuery-Growl/jquery.growl.css" rel="stylesheet">
+          rel="stylesheet" th:href="@{/css/jQuery-Growl/jquery.growl.css}">
     <link href="../static/css/ztree/zTreeStyle.css"
-          th:href="/resources/static/css/ztree/zTreeStyle.css" rel="stylesheet">
+          rel="stylesheet" th:href="@{/css/ztree/zTreeStyle.css}">
 
     <title>zk树查看</title>
     <!-- HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 -->
@@ -39,7 +39,7 @@
     <div class="col-md-12">
         <div class="box">
             <div class="box-body">
-                <ul class="zTree">
+                <ul class="zTree" id="zTree">
 
                 </ul>
             </div>
@@ -48,16 +48,16 @@
 </div>
 </body>
 <script src="../static/lib/jquery/jquery-3.4.1.min.js"
-        th:src="@{/resources/static/lib/jquery/jquery-3.4.1.min.js}"></script>
+        th:src="@{/lib/jquery/jquery-3.4.1.min.js}"></script>
 <script src="../static/lib/ztree/jquery.ztree.all.min.js"
-        th:src="@{/resources/static/lib/ztree/jquery.ztree.all.min.js}"></script>
+        th:src="@{/lib/ztree/jquery.ztree.all.min.js}"></script>
 <script src="../static/lib/bootstrap/bootstrap.min.js"
-        th:src="@{/resources/static/lib/bootstrap/bootstrap.min.js}"></script>
+        th:src="@{/lib/bootstrap/bootstrap.min.js}"></script>
 <script src="../static/lib/bootstrap-table/bootstrap-table.min.js"
-        th:src="@{/resources/static/lib/bootstrap-table/bootstrap-table.min.js}"></script>
+        th:src="@{/lib/bootstrap-table/bootstrap-table.min.js}"></script>
 <script src="../static/lib/jQuery-Growl/jquery.growl.js"
-        th:src="@{/resources/static/lib/jQuery-Growl/jquery.growl.js}"></script>
+        th:src="@{/lib/jQuery-Growl/jquery.growl.js}"></script>
 
-<script src="../static/script/index.js" th:src="@{/resources/static/script/index.js}" type="module"></script>
+<script src="../static/script/index.js" th:src="@{/script/index.js}" type="module"></script>
 
 </html>

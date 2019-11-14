@@ -17,6 +17,7 @@ import org.apache.zookeeper.data.Stat;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
@@ -34,22 +35,7 @@ public class ZkWebClient implements Watcher {
     private String zkAuthInfo;
     private Stat stat = new Stat();
 
-    /**
-     * 标准使用的构造器，传入zk集群的String串，传入认证信息（该认证信息只会用户zk初始化连接时使用）和超时时间
-     *
-     * @param zkServerList   zk集群的String串
-     * @param zkAuthInfo     认证信息（digest认证）
-     * @param serviceTimeout 超时时间
-     */
-    public ZkWebClient(String zkServerList, String zkAuthInfo, int serviceTimeout) {
-        if (StringUtils.isEmpty(zkServerList)) {
-            return;
-        }
-        this.zkServerList = zkServerList;
-        this.zkAuthInfo = zkAuthInfo;
-        if (serviceTimeout == 0) this.defaultServiceTimeout = 3000;
-        else this.defaultServiceTimeout = serviceTimeout;
-    }
+    public static List<String> errorPaths = new ArrayList<>();
 
     @Override
     public void process(WatchedEvent watchedEvent) {
@@ -66,21 +52,29 @@ public class ZkWebClient implements Watcher {
         }
     }
 
-    public ZkWebClient updateInfo(String zkServerList, String zkAuthInfo, int serviceTimeout) {
-
-        if ((!zkServerList.equals(this.zkServerList) || !zkAuthInfo.equals(this.zkAuthInfo) || this.defaultServiceTimeout != (serviceTimeout == 0 ? 3000 : serviceTimeout))) {
-            close();
-            this.zkServerList = zkServerList;
-            this.zkAuthInfo = zkAuthInfo;
-            this.defaultServiceTimeout = (serviceTimeout == 0 ? 3000 : serviceTimeout);
-            try {
-                this.zooKeeper = new ZooKeeper(this.zkServerList, this.defaultServiceTimeout, this);
-            } catch (IOException e) {
-                NerException.throwException("根据zk集群地址" + zkServerList + "无法连接zookeeper", e);
-            }
+    /**
+     * 标准使用的构造器，传入zk集群的String串，传入认证信息（该认证信息只会用户zk初始化连接时使用）和超时时间
+     *
+     * @param zkServerList   zk集群的String串
+     * @param zkAuthInfo     认证信息（digest认证）
+     * @param serviceTimeout 超时时间
+     */
+    public ZkWebClient(String zkServerList, String zkAuthInfo, int serviceTimeout) {
+        if (StringUtils.isEmpty(zkServerList)) {
+            return;
         }
-        return this;
+        this.zkServerList = zkServerList;
+        this.zkAuthInfo = zkAuthInfo;
+        if (serviceTimeout == 0) this.defaultServiceTimeout = 3000;
+        else this.defaultServiceTimeout = serviceTimeout;
+        try {
+            connect();
+        } catch (IOException | InterruptedException e) {
+            log.error("连接失败", e);
+            NerException.throwException("连接zk集群" + zkServerList + "失败！！！", e);
+        }
     }
+
     /**
      * 获取指定路径下的子节点
      *
@@ -179,33 +173,50 @@ public class ZkWebClient implements Watcher {
         }
     }
 
-    /**
-     * 官方的删除指定节点，如果存在
-     * @param path 指定路径
-     * @param version 节点版本
-     * @throws KeeperException
-     *  KeeperException.NotEmpty 该节点非空
-     *  KeeperException.BadVersion 错误，不存在的版本
-     *  KeeperException.NoNode 节点不存在
-     * @throws InterruptedException InterruptedException
-     */
-    public void deleteTargetPathNode(String path,int version) throws KeeperException, InterruptedException {
-        zooKeeper.delete(path,version);
+    public ZkWebClient updateInfo(String zkServerList, String zkAuthInfo, int serviceTimeout) {
+
+        if ((!zkServerList.equals(this.zkServerList) || !zkAuthInfo.equals(this.zkAuthInfo) || this.defaultServiceTimeout != (serviceTimeout == 0 ? 3000 : serviceTimeout))) {
+            close();
+            this.zkServerList = zkServerList;
+            this.zkAuthInfo = zkAuthInfo;
+            this.defaultServiceTimeout = (serviceTimeout == 0 ? 3000 : serviceTimeout);
+            try {
+                this.zooKeeper = new ZooKeeper(this.zkServerList, this.defaultServiceTimeout, this);
+                connect();
+            } catch (IOException | InterruptedException e) {
+                NerException.throwException("根据zk集群地址" + zkServerList + "无法连接zookeeper", e);
+            }
+        }
+        return this;
     }
 
+    /**
+     * 官方的删除指定节点，如果存在
+     *
+     * @param path    指定路径
+     * @param version 节点版本
+     * @throws KeeperException      KeeperException.NotEmpty 该节点非空
+     *                              KeeperException.BadVersion 错误，不存在的版本
+     *                              KeeperException.NoNode 节点不存在
+     * @throws InterruptedException InterruptedException
+     */
+    public void deleteTargetPathNode(String path, int version) throws KeeperException, InterruptedException {
+        zooKeeper.delete(path, version);
+    }
 
     /**
      * 删除节点，不关心版本，删除该节点
+     *
      * @param path 指定路径
-     * @throws KeeperException
-     *  KeeperException.NotEmpty 该节点非空
-     *  KeeperException.BadVersion 错误，不存在的版本
-     *  KeeperException.NoNode 节点不存在
+     * @throws KeeperException      KeeperException.NotEmpty 该节点非空
+     *                              KeeperException.BadVersion 错误，不存在的版本
+     *                              KeeperException.NoNode 节点不存在
      * @throws InterruptedException InterruptedException
      */
     public void deleteTargetPathNodeWhateverWhichVersion(String path) throws KeeperException, InterruptedException {
         deleteTargetPathNode(path, -1);
     }
+
     /**
      * 递归的创建节点（即没有父节点时自动创建没有内容的父节点）
      *
@@ -214,8 +225,8 @@ public class ZkWebClient implements Watcher {
      */
     public void createOpenACLPersistentRecursionNodeSync(String path, String context) throws KeeperException, InterruptedException {
         checkParentNodeAndCreateTargetNodeIfItNotExistWithOpenACLAndPersistentState(path);
-        log.error("开始创建目标节点{}内容{}",path,context);
-        if (zooKeeper.exists(path,true) == null) {
+        log.error("开始创建目标节点{}内容{}", path, context);
+        if (zooKeeper.exists(path, true) == null) {
             zooKeeper.create(path, context == null ? null : context.getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         }
     }
@@ -224,8 +235,9 @@ public class ZkWebClient implements Watcher {
      * 递归创建目标路径的父路径
      * /test/node1/node11/node111,
      * 会检查/test /test/node1 /test/node1/node11 三个父节点是否存在，不存在时直接创建无内容的持久话，开放权限的节点
+     *
      * @param path 目标路径
-     * @throws KeeperException KeeperException
+     * @throws KeeperException      KeeperException
      * @throws InterruptedException InterruptedException
      */
     private void checkParentNodeAndCreateTargetNodeIfItNotExistWithOpenACLAndPersistentState(String path) throws KeeperException, InterruptedException {
@@ -234,10 +246,52 @@ public class ZkWebClient implements Watcher {
         //判断父节点是否存在，存在则先创建，再创建子节点
         if (parentPath.length() > 0) {
             checkParentNodeAndCreateTargetNodeIfItNotExistWithOpenACLAndPersistentState(parentPath);
-            log.error("监测节点：：：{}是否存在",parentPath);
-            if (zooKeeper.exists(parentPath,true) == null) {
+            log.error("监测节点：：：{}是否存在", parentPath);
+            if (zooKeeper.exists(parentPath, true) == null) {
                 zooKeeper.create(parentPath, null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
             }
         }
+    }
+
+    public void traverseZkTree(String path) throws KeeperException, InterruptedException {
+        final Stat exists = zooKeeper.exists(path, false);
+        if (exists != null) {
+            //zNodeInfoVO.setParams(zooKeeper.get);
+//            final byte[] data = zooKeeper.getData(path, false, stat);
+            final List<ACL> acl = zooKeeper.getACL(path, stat);
+            System.err.println("路径：：：" + path + "的原权限是" + acl);
+            final ArrayList<ACL> acls = new ArrayList<>();
+            final ACL acl1 = new ACL();
+            acl1.setId(ZooDefs.Ids.ANYONE_ID_UNSAFE);
+            acl1.setPerms(ZooDefs.Perms.ALL);
+            acls.add(acl1);
+            try {
+                zooKeeper.setACL(path, acls, -1);
+
+            } catch (KeeperException.NoAuthException e) {
+                errorPaths.add(path);
+                System.err.println("路径下的:::" + path + " :::KeeperException.NoAuthException跳过");
+            }
+
+            System.err.println("路径：：：" + path + "的现权限是" + acls);
+
+            final List<String> children = zooKeeper.getChildren(path, false);
+            if (children != null && children.size() != 0) {
+                final List<ZNodeDTO> zNodeDTOS = new ArrayList<>();
+                for (String childPath :
+                        children) {
+                    if (!path.endsWith("/")) {
+                        System.err.println(path + "/" + childPath);
+                        traverseZkTree(path + "/" + childPath);
+                    } else {
+                        System.err.println(path + childPath);
+                        traverseZkTree(path + childPath);
+                    }
+
+                }
+            }
+
+        }
+
     }
 }

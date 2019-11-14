@@ -12,6 +12,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class RetJson<E> implements Serializable {
     public static String success = "200";
+    public static String success_message = "请求成功";
     private static final RetJson retSuccess = new RetJson(success);
     public static String failure = "303";
     private static final RetJson retFailure = new RetJson(failure);

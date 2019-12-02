@@ -1,9 +1,6 @@
 package com.giligency.zkweb.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -11,11 +8,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RetJson<E> implements Serializable {
-    public static String success = "200";
-    public static String success_message = "请求成功";
-    private static final RetJson retSuccess = new RetJson(success);
-    public static String failure = "303";
-    private static final RetJson retFailure = new RetJson(failure);
+    public static final String success = "200";
+    public static final String success_message = "请求成功";
+    public static final String failure = "303";
+    public static final String failure_message = "请求失败";
     @NonNull
     private String code;
     private String message;
@@ -30,58 +26,74 @@ public class RetJson<E> implements Serializable {
         this.message = message;
     }
 
-    public static <T> RetJson<T> newBean(T type) {
-        return new RetJson<>();
+    private RetJson(String code, E data) {
+        this.code = code;
+        this.data = data;
+    }
+
+    public static <T> RetJson<T> retBean(String code, String message, T type) {
+        return new RetJson<>(code, message, type);
+    }
+
+    public static <T> RetJson<T> retBean(String code, String message) {
+        return new RetJson<>(code, message);
+    }
+
+    public static <T> RetJson<T> retBean(String code, T type) {
+        return new RetJson<>(code, type);
+    }
+
+    public static <T> RetJson<T> retBean(String code) {
+        return new RetJson<>(code);
+    }
+
+    public static <T> RetJson<T> retDefaultErrorBean(String message) {
+        return new RetJson<>(RetJson.failure, message);
+    }
+
+    public static RetJson<Exception> retErrorBeanWithStack(String message, Exception e) {
+        return new RetJson<>(RetJson.failure, message, e);
+    }
+
+    public static <T> RetJson<T> retDefaultSuccessBean(String message) {
+        return new RetJson<>(RetJson.success, message);
+    }
+
+    /**
+     * @param <T>
+     */
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    public static final class Success<T> extends RetJson<T> implements Serializable {
+        private static final Success<?> success = new Success<>();
+        private final String code = RetJson.success;
+        private final String message = RetJson.success_message;
+        private final T data = null;
+
+        private Success() {
+
+        }
+
+        public static RetJson<?> getSuccess() {
+            return success;
+        }
 
     }
 
-    @SuppressWarnings("unchecked")
-    public static RetJson returnSuccess() {
-        retSuccess.setMessage(null);
-        retSuccess.setData(null);
-        return retSuccess;
-    }
-    public static RetJson returnSuccess(String message) {
-        final RetJson objectRetJson = new RetJson();
-        objectRetJson.setCode(success);
-        objectRetJson.setMessage(message);
-        return objectRetJson;
-    }
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    public static final class Failure<T> extends RetJson<T> implements Serializable {
+        private static final Failure<?> failure = new Failure<>();
+        private final String code = RetJson.failure;
+        private final String message = RetJson.failure_message;
+        private final T data = null;
 
-    public static <T> RetJson<T> returnSuccess(String message, T data) {
-        final RetJson<T> objectRetJson = new RetJson<>();
-        objectRetJson.setCode(success);
-        objectRetJson.setMessage(message);
-        objectRetJson.setData(data);
-        return objectRetJson;
-    }
+        private Failure() {
 
-    @SuppressWarnings("unchecked")
-    public static RetJson returnFailure() {
-        retFailure.setMessage(null);
-        retFailure.setData(null);
-        return retFailure;
-    }
-    public static RetJson returnFailure(String message) {
-        final RetJson objectRetJson = new RetJson();
-        objectRetJson.setCode(failure);
-        objectRetJson.setMessage(message);
-        return objectRetJson;
-    }
+        }
 
-    public static <T> RetJson<T> returnFailure(String message, T data) {
-        final RetJson<T> objectRetJson = new RetJson<>();
-        objectRetJson.setCode(failure);
-        objectRetJson.setMessage(message);
-        return objectRetJson;
+        public static RetJson<?> getFailure() {
+            return failure;
+        }
     }
-
-    public static <T> RetJson<T> buildJson(String code, String message, T data) {
-        final RetJson<T> objectRetJson = new RetJson<>();
-        objectRetJson.setCode(code);
-        objectRetJson.setCode(failure);
-        objectRetJson.setMessage(message);
-        return objectRetJson;
-    }
-
 }

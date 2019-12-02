@@ -11,11 +11,14 @@
           rel="stylesheet" th:href="@{/css/fontawesome/v5.11.2/all.min.css}">
     <link href="../static/css/bootstrap-table/bootstrap-table.min.css"
           rel="stylesheet" th:href="@{/css/bootstrap-table/bootstrap-table.min.css}">
-    <link href="../static/css/jQuery-Growl/jquery.growl.css"
-          rel="stylesheet" th:href="@{/css/jQuery-Growl/jquery.growl.css}">
+    <link href="../static/css/bootstrap3-dialog/1.34.7/bootstrap-dialog.min.css" rel="stylesheet"
+          th:href="@{/css/bootstrap3-dialog/1.34.7/bootstrap-dialog.min.css}">
     <link href="../static/css/ztree/zTreeStyle.css"
           rel="stylesheet" th:href="@{/css/ztree/zTreeStyle.css}">
-
+    <link href="../static/lib/jquery/jquery-message/1.0.0/jquery-message.css" rel="stylesheet"
+          th:href="@{/lib/jquery/jquery-message/1.0.0/jquery-message.css}">
+    <link href="../static/css/index.css" rel="stylesheet"
+          th:href="@{/css/index.css}">
     <title>zk树查看</title>
     <!-- HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 -->
     <!-- 警告：通过 file:// 协议（就是直接将 html 页面拖拽到浏览器中）访问页面时 Respond.js 不起作用 -->
@@ -46,6 +49,13 @@
         </div>
     </div>
 </div>
+<div id="contextMenu">
+    <ul>
+        <li id="addChildNode">添加节点</li>
+        <li id="deleteCurNode">删除节点</li>
+        <li id="copyAbsolutePath">复制路径</li>
+    </ul>
+</div>
 </body>
 <script src="../static/lib/jquery/jquery-3.4.1.min.js"
         th:src="@{/lib/jquery/jquery-3.4.1.min.js}"></script>
@@ -55,8 +65,10 @@
         th:src="@{/lib/bootstrap/bootstrap.min.js}"></script>
 <script src="../static/lib/bootstrap-table/bootstrap-table.min.js"
         th:src="@{/lib/bootstrap-table/bootstrap-table.min.js}"></script>
-<script src="../static/lib/jQuery-Growl/jquery.growl.js"
-        th:src="@{/lib/jQuery-Growl/jquery.growl.js}"></script>
+<script src="../static/lib/bootstrap-dialog/bootstrap-dialog.js"
+        th:src="@{/lib/bootstrap-dialog/bootstrap-dialog.js}"></script>
+<script src="../static/lib/jquery/jquery-message/1.0.0/jquery-message.js"
+        th:src="@{/lib/jquery/jquery-message/1.0.0/jquery-message.js}"></script>
 
 <script src="../static/script/index.js" th:src="@{/script/index.js}" type="module"></script>
 

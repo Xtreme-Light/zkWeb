@@ -17,6 +17,17 @@ let nodeDataFilter = (treeId, parentNode, responseData) => {
     }
     let data = responseData.data;
 };
+let contextMenuNodeInfo = {};
+let contextMenu = (event, treeId, treeNode) => {
+    event.preventDefault();
+    let $contextMenu = $('#contextMenu')[0];
+    $contextMenu.style.display = 'block';
+    $contextMenu.style.left = event.clientX + 'px';
+    $contextMenu.style.top = event.clientY + 'px';
+    contextMenuNodeInfo.event = event;
+    contextMenuNodeInfo.treeId = treeId;
+    contextMenuNodeInfo.treeNode = treeNode;
+};
 let setting = {
     data: {
         simpleData: {
@@ -55,18 +66,43 @@ let setting = {
         type: "post",
         url: "/zookeeper/node/getTargetNodeChildren",
         dataFilter: nodeDataFilter
+    },
+    callback: {
+        onRightClick: contextMenu
     }
 };
 
 class Page {
+    //展示zk配置的一些详细信息
+    static operateEvent = {
+        'click [name="showDetail"]': function (event, value, row, index) {
+            console.log(row);
+            $.growl.notice({
+                message: row.zkServerList
+
+            });
+            BootstrapDialog.alert();
+        }
+    };
+
     constructor() {
         //页面的中Table表的row 行点击选中后触发的事件
         this.rowClick();
+        this.addChildNode();
+        this.deleteCurNode();
+        this.contextMenuInit();
+    }
+
+    contextMenuInit() {
+        document.onclick = function () {
+            let $contextMenu = $('#contextMenu')[0];
+            $contextMenu.style.display = 'none';
+        }
     }
 
     rowClick() {
         $('#zkList').on('click-row.bs.table', function (e, row, $element) {
-            let $children = $('#zkList ').find("tr");
+            let $children = $('#zkList').find("tr");
             for (let i = 0; i < $children.length; i++) {
                 $children[i].bgColor = '#FFFFFF';
             }
@@ -82,12 +118,90 @@ class Page {
         });
     };
 
-    /**
-     * 请求节点后返回的数据过滤
-     * @param treeId
-     * @param parentNode
-     * @param responseData
-     */
+    addChildNode() {
+        $('#addChildNode').off('click').on('click', function () {
+            BootstrapDialog.show({
+                title: '新增节点',
+                message: '输入新增路径：<input></input>',
+                buttons: [
+                    {
+                        label: '确定',
+                        cssClass: 'btn-primary',
+                        hotkey: 13, // Enter.
+                        action: function (dialog) {
+                            let absolutePath = contextMenuNodeInfo.treeNode.absolutePath;
+                            alert(absolutePath)
+                        }
+                    }, {
+                        label: '取消',
+                        cssClass: 'btn-default',
+                        hotkey: 27, // Esc.
+                        action: function (dialog) {
+                            dialog.close();
+                        }
+                    }
+                ]
+
+            });
+        });
+    }
+
+    deleteCurNode() {
+        $('#deleteCurNode').off('click').on('click', function () {
+            BootstrapDialog.confirm({
+                title: '删除节点确认框',
+                message: '确认删除节点？',//TODO 在这里添加上要删除节点的完整的路径
+                type: BootstrapDialog.TYPE_WARNING,
+                closable: true,
+                draggable: true,
+                btnOKLabel: '确定！',
+                btnOKClass: 'btn-warning',
+                btnCancelLabel: '取消',
+                callback: function (result) {
+                    if (result) {
+                        //如果点击了确定
+                        // alert('yes');
+                        $.ajax("/zookeeper/node/delete", {
+                            type: "DELETE",
+                            data: JSON.stringify({
+                                "absolutePath": contextMenuNodeInfo.treeNode.absolutePath,
+                                "zkAddress": contextMenuNodeInfo.treeNode.zkAddress
+                            }),
+                            cache: false,
+                            async: true,
+                            timeout: 30000,
+                            contentType: 'application/json',
+                            dataType: 'json',
+                            success: function (data, textStatus, jqXHR) {
+                                // data 可能是 xmlDoc, jsonObj, html, text, 等等...
+                                //界面上给TreeNode增加节点
+                                if (data && data.code === "200") {
+                                    $.message("删除节点" + contextMenuNodeInfo.treeNode.absolutePath + "成功！")
+                                } else {
+                                    $.message({
+                                        message: "删除节点失败！！！" + data.message,
+                                        type: "error"
+                                    });
+                                }
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                // 通常 textStatus 和 errorThrown 之中
+                                // 只有一个会包含信息
+                                $.message({
+                                    message: "删除节点失败！！！",
+                                    type: "error"
+                                });
+                            }
+                        })
+                    } else {
+                        // alert('no')
+                    }
+                }
+
+            });
+        });
+    }
+
 
 }
 
@@ -107,8 +221,11 @@ let columns = [{
 }, {
     title: "配置信息",
     formatter: function (value, row, index, field) {
-        return "";
-    }
+        return "<button name = 'showDetail' class='btn btn-primary'>详情</button>";
+    },
+    events: Page.operateEvent
+
+
 }];
 let bTable = new BTable("#zkList", "./data/data1.json", columns);
 bTable.init();

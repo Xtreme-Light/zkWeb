@@ -13,9 +13,9 @@ orika  bean转换jar
 [jQuery Growl][jQuery Growl]  消息弹窗  
 [zTree][zTree] zTree 是一个依靠 jQuery 实现的多功能 “树插件”。  
 [thymeleaf][thymeleaf] springboot 官方推荐使用的前段模版引擎  
+[bootstrap-dialog][bootstrap-dialog] 一个好用的模态框
 
-
-
+[bootstrap-dialog]:https://github.com/nakupanda/bootstrap3-dialog
 [bootstrap]:https://www.bootcss.com/ 
 [bootstrap-table]:https://bootstrap-table.com/
 [jQuery Growl]:http://ksylvest.github.io/jquery-growl/  

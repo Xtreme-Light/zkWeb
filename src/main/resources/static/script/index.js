@@ -122,7 +122,7 @@ class Page {
         $('#addChildNode').off('click').on('click', function () {
             BootstrapDialog.show({
                 title: '新增节点',
-                message: '输入新增路径：<input></input>',
+                message: '输入新增路径：<input id="newNodePath">',
                 buttons: [
                     {
                         label: '确定',
@@ -130,7 +130,40 @@ class Page {
                         hotkey: 13, // Enter.
                         action: function (dialog) {
                             let absolutePath = contextMenuNodeInfo.treeNode.absolutePath;
-                            alert(absolutePath)
+                            let innerText = $('#newNodePath').val();
+                            let newPath = absolutePath + "/" + innerText;
+                            $.ajax("/zookeeper/node/create", {
+                                type: "PUT",
+                                data: JSON.stringify({
+                                    "absolutePath": newPath,
+                                    "zkAddress": contextMenuNodeInfo.treeNode.zkAddress
+                                }),
+                                cache: false,
+                                async: true,
+                                timeout: 30000,
+                                contentType: 'application/json',
+                                dataType: 'json',
+                                success: function (data, textStatus, jqXHR) {
+                                    // data 可能是 xmlDoc, jsonObj, html, text, 等等...
+                                    //界面上给TreeNode增加节点
+                                    if (data && data.code === "200") {
+                                        $.message("创建节点" + newPath + "成功！")
+                                    } else {
+                                        $.message({
+                                            message: "创建节点失败！！！" + data.message,
+                                            type: "error"
+                                        });
+                                    }
+                                },
+                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                    // 通常 textStatus 和 errorThrown 之中
+                                    // 只有一个会包含信息
+                                    $.message({
+                                        message: "创建节点失败！！！",
+                                        type: "error"
+                                    });
+                                }
+                            })
                         }
                     }, {
                         label: '取消',

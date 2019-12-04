@@ -1,4 +1,5 @@
 import {BTable} from "./btable.js";
+// import {ClipboardJS} from "../lib/clipboard/clipboard.min.js"
 // 对与zTree开始配置
 let nodeDataFilter = (treeId, parentNode, responseData) => {
     if (responseData && responseData.code === "200") {
@@ -77,10 +78,6 @@ class Page {
     static operateEvent = {
         'click [name="showDetail"]': function (event, value, row, index) {
             console.log(row);
-            $.growl.notice({
-                message: row.zkServerList
-
-            });
             BootstrapDialog.alert();
         }
     };
@@ -91,6 +88,7 @@ class Page {
         this.addChildNode();
         this.deleteCurNode();
         this.contextMenuInit();
+        this.copyAbsolutePath();
     }
 
     contextMenuInit() {
@@ -147,7 +145,17 @@ class Page {
                                     // data 可能是 xmlDoc, jsonObj, html, text, 等等...
                                     //界面上给TreeNode增加节点
                                     if (data && data.code === "200") {
-                                        $.message("创建节点" + newPath + "成功！")
+                                        $.message("创建节点" + newPath + "成功！");
+                                        console.log("========================");
+                                        let treeObj = $.fn.zTree.getZTreeObj('zTree');
+                                        treeObj.addNodes(contextMenuNodeInfo.treeNode, -1, {
+                                            "absolutePath": newPath,
+                                            "name": innerText,
+                                            "parentAbsolutePath": contextMenuNodeInfo.treeNode.absolutePath,
+                                            "zkAddress": contextMenuNodeInfo.treeNode.zkAddress,
+                                            "isParent": true
+                                        }, false);
+                                        dialog.close();
                                     } else {
                                         $.message({
                                             message: "创建节点失败！！！" + data.message,
@@ -210,6 +218,8 @@ class Page {
                                 //界面上给TreeNode增加节点
                                 if (data && data.code === "200") {
                                     $.message("删除节点" + contextMenuNodeInfo.treeNode.absolutePath + "成功！")
+                                    let treeObj = $.fn.zTree.getZTreeObj('zTree');
+                                    treeObj.removeNode(contextMenuNodeInfo.treeNode);
                                 } else {
                                     $.message({
                                         message: "删除节点失败！！！" + data.message,
@@ -235,7 +245,32 @@ class Page {
         });
     }
 
+    copyAbsolutePath() {
+        $('#copyAbsolutePath').off('click').on('click', function () {
+            let clipboardJS = new ClipboardJS('#copyAbsolutePath', {
+                text: function (trigger) {
+                    return contextMenuNodeInfo.treeNode.absolutePath;
+                }
+            });
+            clipboardJS.on('success', function (e) {
+                console.info('Action:', e.action);
+                console.info('Text:', e.text);
+                console.info('Trigger:', e.trigger);
+                e.clearSelection();
+            });
+            clipboardJS.on('error', function (e) {
+                console.error('Action:', e.action);
+                console.error('Trigger:', e.trigger);
+                $.message(
+                    {
+                        message: "复制失败！！！！！",
+                        type: "error"
+                    }
+                );
+            });
 
+        })
+    }
 }
 
 

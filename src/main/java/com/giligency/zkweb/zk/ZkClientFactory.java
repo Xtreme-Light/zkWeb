@@ -5,27 +5,28 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ZkClientFactory {
-    private static Map<String, ZkWebClient> map = new ConcurrentHashMap<>();
+    private static Map<String, ZookeeperClient> map = new ConcurrentHashMap<>();
 
     private ZkClientFactory() {
 
     }
 
-    public static ZkWebClient buildZkClient(String zkServerList, String zkAuthInfo, int timeout) {
-        if (map.containsKey(zkServerList)) {
-            final ZkWebClient zkWebClient = map.get(zkServerList);
-            zkWebClient.updateInfo(zkServerList, zkAuthInfo, timeout);
-            return zkWebClient;
+    public static ZookeeperClient buildZkClient(ZookeeperClusterInfo info) {
+        ZookeeperClient zkClient = map.get(info.getAddress());
+        if (zkClient == null) {
+            OfficialZookeeperClient officialZookeeperClient = new OfficialZookeeperClient(info);
+            map.put(info.getAddress(), officialZookeeperClient);
+            return officialZookeeperClient;
         } else {
-            final ZkWebClient zkWebClient = new ZkWebClient(zkServerList, zkAuthInfo, timeout);
-            map.put(zkServerList, zkWebClient);
-            return zkWebClient;
+            if (zkClient.getZookeeperClusterInfo().equals(info)) {
+                return zkClient;
+            } else {
+                zkClient.close();
+                OfficialZookeeperClient officialZookeeperClient = new OfficialZookeeperClient(info);
+                map.put(info.getAddress(), officialZookeeperClient);
+                return officialZookeeperClient;
+            }
         }
-
-    }
-
-    public static ZkWebClient buildZkClient(String zkServerList, String zkAuthInfo) {
-        return buildZkClient(zkServerList, zkAuthInfo, 0);
     }
 
 }

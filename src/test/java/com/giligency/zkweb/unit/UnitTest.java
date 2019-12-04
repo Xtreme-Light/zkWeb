@@ -1,14 +1,11 @@
 package com.giligency.zkweb.unit;
 
 import com.giligency.zkweb.entity.RetJson;
-import com.giligency.zkweb.zk.ZkClientFactory;
-import com.giligency.zkweb.zk.ZkWebClient;
 import lombok.Data;
 import org.apache.zookeeper.KeeperException;
 import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
-import java.util.List;
 
 public class UnitTest {
     private static String path = "/test/node1/node12";
@@ -29,20 +26,20 @@ public class UnitTest {
 
     @Test
     public void test4RetJson() throws KeeperException, InterruptedException {
-        final ZkWebClient zkWebClient = ZkClientFactory.buildZkClient("20.26.25.44:2182,20.26.25.45:2182,20.26.25.46:2182",
+/*        final ZkWebClient zkWebClient = ZkClientFactory.buildZkClient("20.26.25.44:2182,20.26.25.45:2182,20.26.25.46:2182",
                 "amber:amber123!");
         zkWebClient.traverseZkTree("/amber");
-/*        final RetJson retSuccess = RetJson.retSuccess;
+*//*        final RetJson retSuccess = RetJson.retSuccess;
         System.out.println(retSuccess);
         retSuccess.setMessage("1111");
-        System.out.println(retSuccess);*/
+        System.out.println(retSuccess);*//*
         final List<String> errorPaths = ZkWebClient.errorPaths;
-        System.out.println("::::::::::::::::::::::::::::" + errorPaths);
+        System.out.println("::::::::::::::::::::::::::::" + errorPaths);*/
     }
 
     @Test
     void test45() throws KeeperException, InterruptedException {
-        final ZkWebClient zkWebClient = ZkClientFactory.buildZkClient("20.26.25.37:2183,20.26.25.38:2183,20.26.25.39:2183",
+        /*final ZkWebClient zkWebClient = ZkClientFactory.buildZkClient("20.26.25.37:2183,20.26.25.38:2183,20.26.25.39:2183",
                 null);
         final List<String> childrenWithWatcher = zkWebClient.getChildrenWithWatcher("/busidomain/csf/centers/demo/policies/clients");
         System.out.println(childrenWithWatcher.size());
@@ -54,12 +51,12 @@ public class UnitTest {
                         System.out.println(e.getMessage());
                     }
                 }
-        );
+        );*/
     }
 
     @Test
     public void test44() throws KeeperException, InterruptedException {
-        //	20.26.25.37:2183,20.26.25.38:2183,20.26.25.39:2183
+       /* //	20.26.25.37:2183,20.26.25.38:2183,20.26.25.39:2183
         final ZkWebClient zkWebClient = ZkClientFactory.buildZkClient("20.26.25.37:2183,20.26.25.38:2183,20.26.25.39:2183",
                 null);
         final List<String> childrenWithWatcher = zkWebClient.getChildrenWithWatcher("/busidomain/csf/centers/demo/policies/clients");
@@ -88,7 +85,7 @@ public class UnitTest {
                 }
         );
         System.out.println(childrenWithWatcher.size() + "==================");
-
+*/
     }
 
     @Test

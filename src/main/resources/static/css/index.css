@@ -1,5 +1,5 @@
 #contextMenu {
-    position: fixed;
+    position: absolute;
     display: none;
     overflow-y: auto;
     width: 125px;

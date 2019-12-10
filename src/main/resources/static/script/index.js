@@ -1,5 +1,11 @@
 import {BTable} from "./btable.js";
+
+import {API} from "./api.js"
 // import {ClipboardJS} from "../lib/clipboard/clipboard.min.js"
+
+let api = new API();
+api.add("zkServerList", "./data/data1.json", "/zookeeper/server/list");
+api.add("addZkServer", "./data/data1.json", "/zookeeper/server/add");
 // 对与zTree开始配置
 let nodeDataFilter = (treeId, parentNode, responseData) => {
     if (responseData && responseData.code === "200") {
@@ -15,6 +21,11 @@ let nodeDataFilter = (treeId, parentNode, responseData) => {
         }
         return nodes;
 
+    } else if (responseData) {
+        $.message({
+            type: 'error',
+            message: responseData.message
+        })
     }
     let data = responseData.data;
 };
@@ -78,8 +89,45 @@ class Page {
     static operateEvent = {
         'click [name="showDetail"]': function (event, value, row, index) {
             console.log(row);
-            BootstrapDialog.alert();
+            BootstrapDialog.show({
+                title: 'ZK 详细信息',
+                message: function (dialog) {
+                    let $template = Handlebars.compile($("#HBS_zk_info").html());
+                    let _html = $template({
+                        name: row.name,
+                        zkAddress: row.zkAddress,
+                        authority: row.authority,
+                        sessionExpireMs: row.sessionExpireMs,
+                        createTime: row.createTime,
+                        description: row.description
+                    });
+                    return _html;
+                },
+            });
+        },
+        'click [name="deleteZk"]': function (event, value, row, index) {
+            BootstrapDialog.confirm(
+                {
+                    title: '删除确认',
+                    message: '确认从列表中移除ZK: ' + row.zkAddress + "？",
+                    type: BootstrapDialog.TYPE_WARNING,
+                    closable: true,
+                    draggable: true,
+                    btnOKLabel: '确定！',
+                    btnOKHotkey: 13,
+                    btnCancelHotkey: 27,// Esc.
+                    btnOKClass: 'btn-warning',
+                    btnCancelLabel: '取消',
+                    callback: function (result) {
+                        if (result) {
+                            console.log("确定");
+                        }
+
+                    }
+                }
+            );
         }
+
     };
 
     constructor() {
@@ -89,6 +137,7 @@ class Page {
         this.deleteCurNode();
         this.contextMenuInit();
         this.copyAbsolutePath();
+        this.addNewZK()
     }
 
     contextMenuInit() {
@@ -107,7 +156,7 @@ class Page {
             $element[0].bgColor = '#FFEE88';
             $('.text-loader-content').remove();
             $element[0].bgColor = '#FFEE88';
-            let zk_address = row.zkServerList;
+            let zk_address = row.zkAddress;
             $.fn.zTree.destroy(".zTree");
             let newZnodeTree = [
                 {"absolutePath": "/", "name": "/", "parentAbsolutePath": "/", "zkAddress": zk_address, "isParent": true}
@@ -191,11 +240,13 @@ class Page {
         $('#deleteCurNode').off('click').on('click', function () {
             BootstrapDialog.confirm({
                 title: '删除节点确认框',
-                message: '确认删除节点？',//TODO 在这里添加上要删除节点的完整的路径
+                message: '确认删除节点: ' + contextMenuNodeInfo.treeNode.absolutePath + "？",
                 type: BootstrapDialog.TYPE_WARNING,
                 closable: true,
                 draggable: true,
                 btnOKLabel: '确定！',
+                btnOKHotkey: 13,
+                btnCancelHotkey: 27,// Esc.
                 btnOKClass: 'btn-warning',
                 btnCancelLabel: '取消',
                 callback: function (result) {
@@ -217,7 +268,7 @@ class Page {
                                 // data 可能是 xmlDoc, jsonObj, html, text, 等等...
                                 //界面上给TreeNode增加节点
                                 if (data && data.code === "200") {
-                                    $.message("删除节点" + contextMenuNodeInfo.treeNode.absolutePath + "成功！")
+                                    $.message("删除节点" + contextMenuNodeInfo.treeNode.absolutePath + "成功！");
                                     let treeObj = $.fn.zTree.getZTreeObj('zTree');
                                     treeObj.removeNode(contextMenuNodeInfo.treeNode);
                                 } else {
@@ -271,31 +322,123 @@ class Page {
 
         })
     }
+
+    addNewZK() {
+        $('#addZK').off('click').on('click', function () {
+            BootstrapDialog.show(
+                {
+                    title: '新增ZK集群',
+                    type: BootstrapDialog.TYPE_WARNING,
+                    closable: true,
+                    draggable: true,
+                    buttons: [
+                        {
+                            label: '确定',
+                            cssClass: 'btn-primary',
+                            hotkey: 13, // Enter.
+                            action: function (dialog) {
+                                let _cmd = {
+                                    name: document.getElementById("name").value,
+                                    authority: document.getElementById("authority").value,
+                                    description: document.getElementById("description").value,
+                                    zkAddress: document.getElementById("zkAddress").value,
+                                    createTime: new Date()
+                                };
+                                $.ajax(api.get('addZkServer'), {
+                                    type: "POST",
+                                    data: _cmd,
+                                    cache: false,
+                                    async: true,
+                                    timeout: 30000,
+                                    success: function (data, textStatus, jqXHR) {
+                                        // data 可能是 xmlDoc, jsonObj, html, text, 等等...
+                                        //界面上给TreeNode增加节点
+                                        if (data && data.code === "200") {
+                                            $.message("新增ZK" + _cmd.zkAddress + "成功！");
+                                            console.log("========================");
+                                            dialog.close();
+                                        } else {
+                                            $.message({
+                                                message: "新增ZK失败！！！" + data.message,
+                                                type: "error"
+                                            });
+                                        }
+                                    },
+                                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                        // 通常 textStatus 和 errorThrown 之中
+                                        // 只有一个会包含信息
+                                        $.message({
+                                            message: "新增ZK失败！！！",
+                                            type: "error"
+                                        });
+                                    }
+                                })
+                            }
+                        }, {
+                            label: '取消',
+                            cssClass: 'btn-default',
+                            hotkey: 27, // Esc.
+                            action: function (dialog) {
+                                dialog.close();
+                            }
+                        }
+                    ],
+                    message: function (dialog) {
+                        // let $template = Handlebars.compile($("#HBS_add_zk").html());
+                        // let _html = $template({});
+                        return '<form role="form">' +
+                            '        <div class="form-group">' +
+                            '            <label for="name">标识名称：</label>' +
+                            '            <input type="text" class="form-control" name="name" id="name" placeholder="name">' +
+                            '        </div>' +
+                            '        <div class="form-group">' +
+                            '            <label for="zkAddress">ZK地址：</label>' +
+                            '            <input type="text" class="form-control" name="zkAddress" id="zkAddress" placeholder="zkAddress">' +
+                            '        </div>' +
+                            '        <div class="form-group">' +
+                            '            <label for="authority">认证信息（digest模式）：</label>' +
+                            '            <input type="text" class="form-control" id="authority" name="authority" placeholder="authority">' +
+                            '        </div>' +
+                            '        <div class="form-group">' +
+                            '            <label for="description">描述：</label>' +
+                            '            <input type="text" class="form-control" name="description" id="description" placeholder="description">' +
+                            '        </div>' +
+                            '' +
+                            '    </form>';
+                    },
+                }
+            );
+
+        });
+    }
+
 }
 
 
 let page = new Page();
 
 let columns = [{
-    field: "zkName",
+    field: "name",
     title: "zk名称",
     width: "150px"
 }, {
-    field: "zkServerList",
+    field: "zkAddress",
     title: "zk集群地址"
 }, {
-    field: "timeout",
+    field: "sessionExpireMs",
     title: "超时时间"
 }, {
     title: "配置信息",
+    width: "150px",
     formatter: function (value, row, index, field) {
-        return "<button name = 'showDetail' class='btn btn-primary'>详情</button>";
+        return "<button name = 'showDetail' class='btn btn-primary'>详情</button>" +
+            "<button name = 'deleteZk' class='btn btn-warning pull-right'>删除ZK</button>";
     },
     events: Page.operateEvent
 
 
 }];
-let bTable = new BTable("#zkList", "./data/data1.json", columns);
+let bTable = new BTable("#zkList", api.get("zkServerList"), columns);
 bTable.init();
 
 

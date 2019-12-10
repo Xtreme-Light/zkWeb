@@ -6,6 +6,9 @@ import org.apache.zookeeper.KeeperException;
 import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class UnitTest {
     private static String path = "/test/node1/node12";
@@ -113,6 +116,14 @@ public class UnitTest {
 
         }
 
+    }
+
+    @Test
+    void test4Regular() {
+        String format = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss").format(LocalDateTime.now());
+        String format2 = DateTimeFormatter.ofPattern("yyyy-MM-dd").format(LocalDate.now());
+        System.out.println(format);
+        System.out.println(format2);
     }
 
     @Test

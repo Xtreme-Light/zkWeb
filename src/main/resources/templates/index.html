@@ -31,7 +31,11 @@
 <div class="row">
     <div class="col-md-12">
         <div class="box">
-            <div class="box-header"></div>
+            <div class="box-header">
+                <div class="col-md-2 pull-right">
+                    <button class="btn btn-default pull-right" id="addZK">新增</button>
+                </div>
+            </div>
             <div class="box-body">
                 <table id="zkList"></table>
             </div>
@@ -71,6 +75,19 @@
         th:src="@{/lib/jquery/jquery-message/1.0.0/jquery-message.js}"></script>
 <script src="../static/lib/clipboard/clipboard.min.js"
         th:src="@{/lib/clipboard/clipboard.min.js}"></script>
+<script src="../static/lib/handlebars/4.5.3/handlebars.min-v4.5.3.js"
+        th:src="@{/lib/handlebars/4.5.3/handlebars.min-v4.5.3.js}"></script>
 <script src="../static/script/index.js" th:src="@{/script/index.js}" type="module"></script>
-
+<script id="HBS_zk_info" type="text/x-handlebars-template">
+    <div>
+        <p>zk名称:{{ name }} </p>
+        <p>zk集群地址:{{ zkAddress }}</p>
+        <p>认证模式: digest</p>
+        <p>认证信息: {{ authority }}</p>
+        <p>超时时间:{{ zkAddress }}</p>
+        <p>超时时间:{{ sessionExpireMs }}</p>
+        <p>创建时间:{{ createTime }}</p>
+        <p>描述:{{ description }}</p>
+    </div>
+</script>
 </html>

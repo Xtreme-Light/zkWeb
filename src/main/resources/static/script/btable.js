@@ -48,7 +48,7 @@ export class BTable {
             responseHandler: function(res) {
                 if (res.code === "200") {
                     return {
-                        "rows": res.data.zkInfo, // 具体每一个bean的列表
+                        "rows": res.data.list, // 具体每一个bean的列表
                         "total": res.data.totalElements // 总共有多少条返回数据
                     }
                 }else if (res.code === "9527") {

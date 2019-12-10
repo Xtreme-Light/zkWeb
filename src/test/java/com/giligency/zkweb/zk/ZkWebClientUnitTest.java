@@ -15,7 +15,7 @@ public class ZkWebClientUnitTest {
     private ZookeeperClient zkWebClient;
     @BeforeEach
     public void init() throws Exception{
-        zkWebClient = ZkClientFactory.buildZkClient(new ZookeeperClusterInfo("127.0.0.1:2181"));
+//        zkWebClient = ZkClientFactory.buildZkClient(new ZookeeperClusterInfo("127.0.0.1:2181"));
 
     }
     @AfterEach

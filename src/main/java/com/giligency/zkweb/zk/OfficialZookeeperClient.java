@@ -33,21 +33,21 @@ public class OfficialZookeeperClient extends AbstractZookeeperClient implements 
     public OfficialZookeeperClient(ZookeeperClusterInfo info) {
         super(info);
         this.info = info;
-        int timeout = info.getTimeout(DEFAULT_CONNECTION_TIMEOUT_MS);
-        int sessionTimeoutMs = info.getSessionExpiresMs(DEFAULT_SESSION_TIMEOUT_MS);
+        int timeout = info.getTimeout();
+        int sessionTimeoutMs = info.getSessionExpiresMs();
         connect2Server(info, timeout);
     }
 
     private void connect2Server(ZookeeperClusterInfo info, int timeout) {
         try {
-            zk = new ZooKeeper(info.getAddress(), timeout, this);
+            zk = new ZooKeeper(info.getZkAddress(), timeout, this);
             String authority = info.getAuthority();
             if (StringUtils.isNotEmpty(authority)) {
                 zk.addAuthInfo("digest", authority.getBytes());
             }
             countDownLatch.await();
         } catch (IOException | InterruptedException e) {
-            NerException.throwException("连接" + info.getAddress() + "失败！！！", e);
+            NerException.throwException("连接" + info.getZkAddress() + "失败！！！", e);
         }
     }
 
@@ -174,8 +174,8 @@ public class OfficialZookeeperClient extends AbstractZookeeperClient implements 
             } else if (state == Event.KeeperState.Expired) {
                 //发生了这个时间需要去重新建立zookeeper客户端
                 countDownLatch = new CountDownLatch(1);
-                int timeout = info.getTimeout(DEFAULT_CONNECTION_TIMEOUT_MS);
-                int sessionTimeoutMs = info.getSessionExpiresMs(DEFAULT_SESSION_TIMEOUT_MS);
+                int timeout = info.getTimeout();
+                int sessionTimeoutMs = info.getSessionExpiresMs();
                 connect2Server(info, timeout);
             } else if (state == Event.KeeperState.AuthFailed) {
                 NerException.throwException("zookeeper认证失败！请检查对应的认证信息！！！");

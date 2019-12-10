@@ -1,66 +1,75 @@
 package com.giligency.zkweb.zk;
 
 
-import lombok.AllArgsConstructor;
+import com.giligency.zkweb.exception.NerException;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Objects;
+import java.util.Optional;
 
-@AllArgsConstructor
+
 @Data
 @NoArgsConstructor
 public class ZookeeperClusterInfo implements Serializable {
+    private String name;
     //like 129.0.0.1:2181,129.0.0.2:2181
-    private String address;
+    private String zkAddress;
 
     private int timeout;
 
     private int sessionExpireMs;
 
-    private String username;
+    private String authority;
 
-    private String password;
+    private String description;
 
-    public ZookeeperClusterInfo(String address) {
-        this.address = address;
+    private Date createTime;
+
+    public ZookeeperClusterInfo(String name, String zkAddress) {
+        init(name, zkAddress, 0, 0, null, null);
 
     }
 
-    public ZookeeperClusterInfo(String address, int timeout, int sessionExpireMs) {
-        this.address = address;
-        this.timeout = timeout;
-        this.sessionExpireMs = sessionExpireMs;
+    public ZookeeperClusterInfo(String name, String zkAddress, int timeout, int sessionExpireMs) {
+        init(name, zkAddress, timeout, sessionExpireMs, null, null);
+
+
     }
 
-    public ZookeeperClusterInfo(String address, String username, String password) {
-        this.address = address;
-        this.username = username;
-        this.password = password;
+    public ZookeeperClusterInfo(String name, String zkAddress, int timeout, int sessionExpireMs, String authority, String description) {
+        init(name, zkAddress, timeout, sessionExpireMs, authority, description);
+    }
+
+    public ZookeeperClusterInfo(String name, String zkAddress, String authority) {
+        init(name, zkAddress, timeout, sessionExpireMs, authority, null);
+    }
+
+    private void init(String name, String zkAddress, int timeout, int sessionExpireMs, String authority, String description) {
+        if (StringUtils.isBlank(zkAddress)) {
+            NerException.throwException("zkaddress不能为空！！！");
+        }
+        this.name = Optional.ofNullable(name).orElse("");
+        this.timeout = (timeout <= 0 ? 30000 : timeout);
+        this.sessionExpireMs = (sessionExpireMs <= 0 ? 30000 : sessionExpireMs);
+        this.authority = Optional.ofNullable(authority).orElse("");
+        this.description = Optional.ofNullable(description).orElse("");
+        this.zkAddress = zkAddress;
     }
 
     public String getAuthority() {
-        if (StringUtils.isBlank(username) && StringUtils.isBlank(password)) {
-            return null;
-        }
-        return (username == null ? "" : username)
-                + ":" + (password == null ? "" : password);
+        return this.authority;
     }
 
-    public int getTimeout(int defaultValue) {
-        if (timeout == 0 | timeout < 0) {
-            return defaultValue;
-        }
+    public int getTimeout() {
         return timeout;
     }
 
-    public int getSessionExpiresMs(int defaultValue) {
-        if (sessionExpireMs == 0 | sessionExpireMs < 0) {
-            return sessionExpireMs;
-        }
-        return defaultValue;
+    public int getSessionExpiresMs() {
+        return sessionExpireMs;
     }
 
     @Override
@@ -73,13 +82,12 @@ public class ZookeeperClusterInfo implements Serializable {
         }
         return timeout == that.timeout &&
                 sessionExpireMs == that.sessionExpireMs &&
-                address == null ? null == that.address : address.equals(that.address) &&
-                username == null ? null == that.username : username.equals(that.username) &&
-                password == null ? null == that.password : password.equals(that.password);
+                zkAddress == null ? null == that.zkAddress : zkAddress.equals(that.zkAddress) &&
+                authority == null ? null == that.authority : authority.equals(that.authority);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(address, timeout, sessionExpireMs, username, password);
+        return Objects.hash(zkAddress, timeout, sessionExpireMs, authority);
     }
 }

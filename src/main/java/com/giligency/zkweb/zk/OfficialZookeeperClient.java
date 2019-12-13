@@ -1,9 +1,11 @@
 package com.giligency.zkweb.zk;
 
+import com.giligency.zkweb.entity.ZKNodeDTO;
 import com.giligency.zkweb.exception.NerException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.*;
+import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 
 import java.io.IOException;
@@ -28,24 +30,49 @@ public class OfficialZookeeperClient extends AbstractZookeeperClient implements 
     private static final Stat stat = new Stat();
     private final ZookeeperClusterInfo info;
     private ZooKeeper zk;
+    private boolean isInit;
     private CountDownLatch countDownLatch = new CountDownLatch(1);
 
     public OfficialZookeeperClient(ZookeeperClusterInfo info) {
         super(info);
         this.info = info;
-        int timeout = info.getTimeout();
-        int sessionTimeoutMs = info.getSessionExpiresMs();
-        connect2Server(info, timeout);
+        isInit = false;
+//        int timeout = info.getTimeout();
+//        int sessionTimeoutMs = info.getSessionExpiresMs();
     }
 
-    private void connect2Server(ZookeeperClusterInfo info, int timeout) {
+    public ZKNodeDTO getTargetNodeDetailInfo(String path) {
         try {
-            zk = new ZooKeeper(info.getZkAddress(), timeout, this);
+            Stat exists = zk.exists(path, false);
+            if (exists == null) {
+                NerException.throwException("对应路径节点不存在！！！" + path);
+            }
+            ZKNodeDTO zkNodeDTO = new ZKNodeDTO();
+            zkNodeDTO.setPath(path);
+            zkNodeDTO.setStat(exists);
+            byte[] data = zk.getData(path, false, exists);
+            zkNodeDTO.setData((data == null || data.length == 0) ? null : new String(data, CHARSET));
+            List<ACL> acl = zk.getACL(path, exists);
+            zkNodeDTO.setAcl(acl);
+            return zkNodeDTO;
+        } catch (KeeperException | InterruptedException e) {
+            NerException.throwException("获取节点信息时出现错误", e);
+        }
+        return null;
+    }
+
+    public void connect2Server() {
+        try {
+            if (isInit) {
+                return;
+            }
+            this.zk = new ZooKeeper(this.info.getZkAddress(), this.info.getSessionExpireMs(), this);
             String authority = info.getAuthority();
             if (StringUtils.isNotEmpty(authority)) {
                 zk.addAuthInfo("digest", authority.getBytes());
             }
             countDownLatch.await();
+            isInit = true;
         } catch (IOException | InterruptedException e) {
             NerException.throwException("连接" + info.getZkAddress() + "失败！！！", e);
         }
@@ -174,9 +201,9 @@ public class OfficialZookeeperClient extends AbstractZookeeperClient implements 
             } else if (state == Event.KeeperState.Expired) {
                 //发生了这个时间需要去重新建立zookeeper客户端
                 countDownLatch = new CountDownLatch(1);
-                int timeout = info.getTimeout();
-                int sessionTimeoutMs = info.getSessionExpiresMs();
-                connect2Server(info, timeout);
+//                int timeout = info.getTimeout();
+//                int sessionTimeoutMs = info.getSessionExpireMs();
+                connect2Server();
             } else if (state == Event.KeeperState.AuthFailed) {
                 NerException.throwException("zookeeper认证失败！请检查对应的认证信息！！！");
             }

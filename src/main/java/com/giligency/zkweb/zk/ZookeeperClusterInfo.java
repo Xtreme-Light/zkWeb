@@ -59,19 +59,6 @@ public class ZookeeperClusterInfo implements Serializable {
         this.description = Optional.ofNullable(description).orElse("");
         this.zkAddress = zkAddress;
     }
-
-    public String getAuthority() {
-        return this.authority;
-    }
-
-    public int getTimeout() {
-        return timeout;
-    }
-
-    public int getSessionExpiresMs() {
-        return sessionExpireMs;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

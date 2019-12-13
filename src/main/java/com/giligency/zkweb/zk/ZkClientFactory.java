@@ -21,10 +21,23 @@ public class ZkClientFactory {
         return infos;
     }
 
+    public static void removeZookeeperClient(String zkAddress) {
+        Optional.ofNullable(map.get(zkAddress)).ifPresent(ZookeeperClient::close);
+        infos.removeIf(V -> V.getZkAddress().equals(zkAddress));
+        map.remove(zkAddress);
+    }
+
+    /**
+     * 创建并连接对应zk
+     *
+     * @param info 对应的zk
+     * @return 处于连接的客户端
+     */
     public static ZookeeperClient buildZkClient(ZookeeperClusterInfo info) {
         ZookeeperClient zkClient = map.get(info.getZkAddress());
         if (zkClient == null) {
             OfficialZookeeperClient officialZookeeperClient = new OfficialZookeeperClient(info);
+            officialZookeeperClient.connect2Server();
             map.put(info.getZkAddress(), officialZookeeperClient);
             infos.add(info);
             return officialZookeeperClient;
@@ -36,6 +49,7 @@ public class ZkClientFactory {
                 OfficialZookeeperClient officialZookeeperClient = new OfficialZookeeperClient(info);
                 map.put(info.getZkAddress(), officialZookeeperClient);
                 infos.add(info);
+                officialZookeeperClient.connect2Server();
                 return officialZookeeperClient;
             }
         }
@@ -47,13 +61,7 @@ public class ZkClientFactory {
 
     public static void initZookeeperClient(List<ZookeeperClusterInfo> zookeeperClusterInfoList) {
         if (!isInit) {
-            zookeeperClusterInfoList.forEach(
-                    V -> {
-                        OfficialZookeeperClient officialZookeeperClient = new OfficialZookeeperClient(V);
-                        map.put(V.getZkAddress(), officialZookeeperClient);
-                        infos.add(V);
-                    }
-            );
+            infos.addAll(zookeeperClusterInfoList);
             isInit = true;
         } else {
             log.error("ZookeeperClient already init!");

@@ -58,6 +58,7 @@
         <li id="addChildNode">添加节点</li>
         <li id="deleteCurNode">删除节点</li>
         <li id="copyAbsolutePath">复制路径</li>
+        <li id="getNodeDetail">详细信息</li>
     </ul>
 </div>
 </body>
@@ -79,15 +80,31 @@
         th:src="@{/lib/handlebars/4.5.3/handlebars.min-v4.5.3.js}"></script>
 <script src="../static/script/index.js" th:src="@{/script/index.js}" type="module"></script>
 <script id="HBS_zk_info" type="text/x-handlebars-template">
-    <div>
-        <p>zk名称:{{ name }} </p>
+    <div><p>zk名称:{{ name }} </p>
         <p>zk集群地址:{{ zkAddress }}</p>
         <p>认证模式: digest</p>
         <p>认证信息: {{ authority }}</p>
         <p>超时时间:{{ zkAddress }}</p>
         <p>超时时间:{{ sessionExpireMs }}</p>
         <p>创建时间:{{ createTime }}</p>
-        <p>描述:{{ description }}</p>
+        <p>描述:{{ description }}</p></div>
+</script>
+<script id="HBS_ZK_node_info" type="text/x-handlebars-template">
+    <div><p>czxid: {{ stat.czxid }}</p>
+        <p>mzxid: {{ stat.mzxid }}</p>
+        <p>ctime: {{ stat.ctime }}</p>
+        <p>mtime: {{ stat.mtime }}</p>
+        <p>version: {{ stat.version }}</p>
+        <p>cversion: {{ stat.cversion }}</p>
+        <p>aversion: {{ stat.aversion }}</p>
+        <p>ephemeralOwner: {{ stat.ephemeralOwner }}</p>
+        <p>dataLength: {{ stat.dataLength }}</p>
+        <p>numChildren: {{ stat.numChildren }}</p>
+        <p>pzxid: {{ stat.pzxid }}</p>
+        <p>path: {{ path }}</p>
+        <p>data: {{ data }}</p>acl: {{#each acl ~}}<p>perms: {{ perms }}</p>
+        <p>scheme:{{ id.scheme }}</p>
+        <p>id:{{ id.id }}</p>{{~/each}}
     </div>
 </script>
 </html>

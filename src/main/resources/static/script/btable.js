@@ -84,10 +84,15 @@ export class BTable {
         return this;
     }
 
+    setUniqueId(uniqueId) {
+        this.bTableOption.uniqueId = uniqueId;
+    }
+
     //获取选中行数据
     getSelections() {
         return this.bTableInstance.bootstrapTable("getSelections");
     }
+
     /**
      * 刷新 bootstrap 表格
      * Refresh the remote server data,
@@ -104,9 +109,43 @@ export class BTable {
             // this.btInstance.bootstrapTable('refresh');
         }
     }
+
     //获取数据
     getData() {
         return this.bTableInstance.bootstrapTable("getData");
+    }
+
+    // 添加数据到表格在现有数据之后。
+    // data为数组
+    appendRow(data) {
+        this.btInstance.bootstrapTable("append", data);
+    }
+
+    // 插入一行数据插入新行，参数包括：
+    // index: 要插入的行的 index，
+    // row: 行的数据，Object 对象。
+    insertRow(index, row) {
+        this.btInstance.bootstrapTable("insertRow", {
+            index: index,
+            row: row
+        });
+    }
+
+    // 删除一行 参数包括：
+    // field: 需要删除的行的 field 名称，
+    // values: 需要删除的行的值，类型为数组。
+    remove(field, values) {
+        // this.inputEmpty = false;
+        this.btInstance.bootstrapTable("remove", {
+            field: field,
+            values: values
+        });
+    }
+
+    //  根据 uniqueId 删除指定的行。
+    removeByUniqueId(UniqueId) {
+        // this.inputEmpty = false;
+        this.btInstance.bootstrapTable("removeByUniqueId", UniqueId);
     }
 
     /*本地化*/

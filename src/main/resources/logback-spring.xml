@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d{MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} --- [%t] %-40.40logger{39} : %m%n</pattern>
+            <!-- 控制台也要使用UTF-8，不要使用GBK，否则会中文乱码 -->
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <springProfile name="dev">
+        <!-- project default level -->
+        <logger name="com.giligency.zkweb" level="DEBUG"/>
+
+        <root level="INFO">
+            <appender-ref ref="console"/>
+            <!-- <appender-ref ref="rollingFile" /> -->
+        </root>
+    </springProfile>
+
+    <springProfile name="qa">
+
+        <!-- 注意这里一定要放到springProfile里, 否则在你本机执行的时候还是会去找相应的文件 -->
+        <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <File>./logs/zkweb.log</File>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!--日志文件输出的文件名-->
+                <FileNamePattern>./logs/aismweb_log.%d{yyyy-MM-dd}.log</FileNamePattern>
+                <!--日志文件保留天数-->
+                <maxHistory>15</maxHistory>
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            </encoder>
+            <!--日志文件最大的大小-->
+            <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+                <MaxFileSize>50MB</MaxFileSize>
+            </triggeringPolicy>
+        </appender>
+
+        <appender name="asyncFileAppender" class="ch.qos.logback.classic.AsyncAppender">
+            <discardingThreshold>0</discardingThreshold>
+            <queueSize>500</queueSize>
+            <appender-ref ref="file"/>
+        </appender>
+
+        <logger name="com.ai" level="DEBUG"/>
+        <logger name="org.springframework" level="INFO"/>
+
+        <root level="INFO">
+            <appender-ref ref="asyncFileAppender"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+
+        <!-- 注意这里一定要放到springProfile里, 否则在你本机执行的时候还是会去找相应的文件 -->
+        <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <File>./log/zkmweb_log_srv.log</File>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!--日志文件输出的文件名-->
+                <FileNamePattern>./logs/aismweb_log.%d{yyyy-MM-dd}.log</FileNamePattern>
+                <!--日志文件保留天数-->
+                <maxHistory>15</maxHistory>
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            </encoder>
+            <!--日志文件最大的大小-->
+            <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+                <MaxFileSize>50MB</MaxFileSize>
+            </triggeringPolicy>
+        </appender>
+
+        <appender name="asyncFileAppender" class="ch.qos.logback.classic.AsyncAppender">
+            <discardingThreshold>0</discardingThreshold>
+            <queueSize>500</queueSize>
+            <appender-ref ref="file"/>
+        </appender>
+
+        <logger name="com.giligency.zkweb" level="EORROR"/>
+
+        <root level="ERROR">
+            <appender-ref ref="file"/>
+        </root>
+    </springProfile>
+
+</configuration>

@@ -23,7 +23,7 @@ public class ZkWebController {
         ZookeeperClient zookeeperClient = ZkClientFactory.getZkClient(zkTreeRequest.getZkAddress());
 
         final List<String> childrenWithWatcher = zookeeperClient.getChildren(zkTreeRequest.getAbsolutePath());
-        return RetJson.retBean(RetJson.success, childrenWithWatcher);
+        return RetJson.retFailure(RetJson.success, childrenWithWatcher);
 
 
     }
@@ -32,7 +32,7 @@ public class ZkWebController {
     public RetJson<?> deleteTargetNode(@RequestBody ZkTreeRequest zkTreeRequest) {
         ZookeeperClient zookeeperClient = ZkClientFactory.getZkClient(zkTreeRequest.getZkAddress());
         zookeeperClient.delete(zkTreeRequest.getAbsolutePath());
-        return RetJson.Success.getSuccess();
+        return RetJson.retSuccess();
 
     }
 
@@ -41,7 +41,7 @@ public class ZkWebController {
         ZookeeperClient zookeeperClient = ZkClientFactory.getZkClient(zkTreeRequest.getZkAddress());
 
         zookeeperClient.create(zkTreeRequest.getAbsolutePath(), false);
-        return RetJson.Success.getSuccess();
+        return RetJson.retSuccess();
 
 
     }
@@ -56,13 +56,13 @@ public class ZkWebController {
     public RetJson<?> createZKServer(ZKServerClusterInfoDTO info) {
         ZookeeperClusterInfo map = BeanMapper.map(info, ZookeeperClusterInfo.class);
         ZkClientFactory.getInfos().add(map);
-        return RetJson.Success.getSuccess();
+        return RetJson.retSuccess();
     }
 
     @PostMapping("/zookeeper/server/delete")
     public RetJson<?> deleteZKServer(@RequestBody ZKServerClusterInfoDTO info) {
         ZkClientFactory.removeZookeeperClient(info.getZkAddress());
-        return RetJson.Success.getSuccess();
+        return RetJson.retSuccess();
     }
 
     @GetMapping("/zookeeper/server/list")
@@ -70,14 +70,14 @@ public class ZkWebController {
         PageHelper pageHelper = new PageHelper();
         pageHelper.setList(ZkClientFactory.getInfos());
         pageHelper.setTotalElements(ZkClientFactory.getInfos().size());
-        return RetJson.retBean(RetJson.success, pageHelper);
+        return RetJson.retFailure(RetJson.success, pageHelper);
     }
 
     @PostMapping("/zookeeper/node/detail")
     public RetJson<?> getDetailNodeInfo(@RequestBody ZkTreeRequest zkTreeRequest) {
         OfficialZookeeperClient zookeeperClient = (OfficialZookeeperClient) ZkClientFactory.getZkClient(zkTreeRequest.getZkAddress());
         ZKNodeDTO targetNodeDetailInfo = zookeeperClient.getTargetNodeDetailInfo(zkTreeRequest.getAbsolutePath());
-        return RetJson.retBean(RetJson.success, RetJson.success_message, targetNodeDetailInfo);
+        return RetJson.retFailure(RetJson.success, RetJson.success_message, targetNodeDetailInfo);
 
     }
 }

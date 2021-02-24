@@ -91,30 +91,13 @@ public class UnitTest {
 */
     }
 
-    @Test
-    void test4StaticInnerClass() {
-        RetJson<?> success = Test4StaticInnerClass.getSuccess();
-
-        System.out.println(success.getMessage());
-    }
 
     @Test
     void testException() {
 
         //378
         //372
-        try {
-            throw new Exception("aaaa");
-        } catch (Exception e) {
-            if (e instanceof KeeperException.NotEmptyException) {
-                System.out.println(RetJson.retDefaultErrorBean("1"));
-            } else if (e instanceof KeeperException.NoNodeException) {
-                System.out.println(RetJson.retDefaultErrorBean("2"));
-            } else if (e instanceof Exception) {
-                System.out.println(RetJson.retDefaultErrorBean("3"));
-            }
 
-        }
 
     }
 
@@ -131,35 +114,8 @@ public class UnitTest {
 
 
         //401
-        //377
-        try {
-            throw new Exception("aaaa");
-        } catch (KeeperException.NotEmptyException e) {
-            System.out.println(RetJson.retDefaultErrorBean("1"));
 
-        } catch (KeeperException.NoNodeException e) {
-            System.out.println(RetJson.retDefaultErrorBean("2"));
-
-        } catch (Exception e) {
-            System.out.println(RetJson.retDefaultErrorBean("3"));
-
-        }
 
     }
 
-    @Data
-    public static final class Test4StaticInnerClass<T> extends RetJson<T> implements Serializable {
-        private static final Test4StaticInnerClass<?> success = new Test4StaticInnerClass<>();
-        private final String code = RetJson.success;
-        private final String message = RetJson.success_message;
-
-        private Test4StaticInnerClass() {
-
-        }
-
-        public static RetJson<?> getSuccess() {
-            return success;
-        }
-
-    }
 }

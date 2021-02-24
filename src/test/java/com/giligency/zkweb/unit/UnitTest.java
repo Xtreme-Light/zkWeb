@@ -91,6 +91,12 @@ public class UnitTest {
 */
     }
 
+    @Test
+    void test4StaticInnerClass() {
+        RetJson<?> success = Test4StaticInnerClass.getSuccess();
+
+        System.out.println(success.getMessage());
+    }
 
     @Test
     void testException() {
@@ -118,4 +124,16 @@ public class UnitTest {
 
     }
 
+    @Data
+    public static final class Test4StaticInnerClass<T> extends RetJson<T> implements Serializable {
+        private static final Test4StaticInnerClass<?> success = new Test4StaticInnerClass<>();
+        private final String code = RetJson.success;
+        private final String message = RetJson.success_message;
+
+
+        public static RetJson<?> getSuccess() {
+            return success;
+        }
+
+    }
 }

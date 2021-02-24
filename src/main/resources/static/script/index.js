@@ -541,7 +541,7 @@ let zNodes = [
         "absolutePath": "/",
         "name": "/",
         "parentAbsolutePath": "/",
-        "zkAddress": "20.26.25.44:2183,20.26.25.45:2183,20.26.25.46:2183",
+        "zkAddress": "127.0.0.1:2183",
         "isParent": true
     },
 

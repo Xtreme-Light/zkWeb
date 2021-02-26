@@ -22,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
  * <artifactId>zookeeper</artifactId>
  * <version>3.5.6</version>
  * </dependency>
+ * @author admin
  */
 @Slf4j
 public class OfficialZookeeperClient extends AbstractZookeeperClient implements Watcher {
@@ -37,8 +38,6 @@ public class OfficialZookeeperClient extends AbstractZookeeperClient implements 
         super(info);
         this.info = info;
         isInit = false;
-//        int timeout = info.getTimeout();
-//        int sessionTimeoutMs = info.getSessionExpiresMs();
     }
 
     public ZKNodeDTO getTargetNodeDetailInfo(String path) {
@@ -201,8 +200,6 @@ public class OfficialZookeeperClient extends AbstractZookeeperClient implements 
             } else if (state == Event.KeeperState.Expired) {
                 //发生了这个时间需要去重新建立zookeeper客户端
                 countDownLatch = new CountDownLatch(1);
-//                int timeout = info.getTimeout();
-//                int sessionTimeoutMs = info.getSessionExpireMs();
                 connect2Server();
             } else if (state == Event.KeeperState.AuthFailed) {
                 NerException.throwException("zookeeper认证失败！请检查对应的认证信息！！！");
@@ -214,8 +211,12 @@ public class OfficialZookeeperClient extends AbstractZookeeperClient implements 
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         OfficialZookeeperClient that = (OfficialZookeeperClient) o;
         if (that.hashCode() != o.hashCode()) {
             return false;

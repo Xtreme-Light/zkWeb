@@ -1,12 +1,10 @@
 #!/bin/bash
 
 
+if [ -f ${PIDFILE} ]; then
+        ID=`ps -ef | grep "zkweb" | grep -v "$0" | grep -v "grep" | awk '{print $2}'`
+        echo "kill ${ID}"
 
-PID=$(ps -ef | grep zkweb-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{ print $2 }')
-if [ -z "$PID" ]
-then
-    echo zkweb is already stopped
-else
-    echo kill $PID
-    kill $PID
+        rm -f ${PIDFILE}
+        echo "kill success"
 fi

@@ -13,7 +13,6 @@ import java.util.Optional;
 
 
 @Data
-@NoArgsConstructor
 public class ZookeeperClusterInfo implements Serializable {
     private String name;
     //like 129.0.0.1:2181,129.0.0.2:2181
@@ -29,6 +28,9 @@ public class ZookeeperClusterInfo implements Serializable {
 
     private Date createTime;
 
+    private ZookeeperClusterInfo() {
+
+    }
     public ZookeeperClusterInfo(String name, String zkAddress) {
         init(name, zkAddress, 0, 0, null, null);
 
@@ -61,8 +63,14 @@ public class ZookeeperClusterInfo implements Serializable {
     }
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+
+            return false;
+        }
         ZookeeperClusterInfo that = (ZookeeperClusterInfo) o;
         if (that.hashCode() != this.hashCode()) {
             return false;

@@ -14,7 +14,6 @@ public class ZkClientFactory {
     private static boolean isInit = false;
 
     private ZkClientFactory() {
-
     }
 
     public static Set<ZookeeperClusterInfo> getInfos() {

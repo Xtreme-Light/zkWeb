@@ -28,3 +28,8 @@
     cursor: default;
     user-select: none;
 }
+textarea{
+    width: 100%;
+    overflow: auto;
+    word-break: break-all;
+}

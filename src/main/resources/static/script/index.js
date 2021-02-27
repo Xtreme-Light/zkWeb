@@ -43,6 +43,88 @@ let contextMenu = (event, treeId, treeNode) => {
     contextMenuNodeInfo.treeId = treeId;
     contextMenuNodeInfo.treeNode = treeNode;
 };
+let showDetail = (event,treeId,treeNode) => {
+    $.ajax(api.get('getNodeDetail'), {
+        type: 'POST',
+        data: JSON.stringify({
+            "absolutePath": treeNode.absolutePath,
+            "zkAddress": treeNode.zkAddress
+        }),
+        contentType: 'application/json',
+        dataType: 'json',
+        cache: false,
+        async: true,
+        timeout: 30000,
+        success: function (data, textStatus, jqXHR) {
+            let $statTable = $("#statTable");
+            $statTable.bootstrapTable('destroy');
+            if (data && data.code === "200") {
+                $("#znodeDetailShowArea").css("display", "block");
+                console.log("get node data %s", data.data);
+                console.log("absolutePath is %s", treeNode.absolutePath);
+                console.log("zkAddress is %s", treeNode.zkAddress);
+                $("#nodeAbsolutePath")[0].innerText = treeNode.absolutePath;
+                $("#nodeZKAddress")[0].innerText = treeNode.zkAddress;
+                let stat = data.data.stat;
+                let nodeData = data.data.data;
+                if (nodeData) {
+                    $("#zNodeDataShowArea").css("display", "block");
+                    $("#zNodeData")[0].innerText = nodeData;
+                }else {
+                    $("#zNodeDataShowArea").css("display", "none");
+                }
+                let acl = data.data.acl;
+                let statMap = [];
+                jQuery.each(stat, function (key, value) {
+                    let stateItem = {};
+                    stateItem.key = key;
+                    stateItem.value = value;
+                    statMap.push(stateItem);
+                });
+                console.log(JSON.stringify(statMap));
+                $statTable.bootstrapTable({
+                    pagination: false,//是否显示分页条
+                    columns: [{
+                        field: "key",
+                        title: "键",
+                        width: "150px"
+                    }, {
+                        field: "value",
+                        title: "值"
+                    }],
+                    striped: true, //是否显示行间隔色
+                    data: statMap
+                });
+                let $aclTextArea = $("#aclTextArea");
+                if (acl && acl.length !== 0) {
+                    $("#aclShowArea").css("display", "block");
+                    $aclTextArea[0].innerText = JSON.stringify(acl,null,2);
+                }else {
+                    $("#aclShowArea").css("display", "none");
+                }
+            } else if (data && data.code === "303") {
+                $.message({
+                    message: "获取ZK节点信息失败！！！" + data.message,
+                    type: "error"
+                });
+            } else {
+                $.message({
+                    message: "获取ZK节点信息失败！！！",
+                    type: "error"
+                });
+            }
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            // 通常 textStatus 和 errorThrown 之中
+            // 只有一个会包含信息
+            $.message({
+                message: "获取ZK节点信息失败！！！",
+                type: "error"
+            });
+        }
+    });
+
+}
 let setting = {
     data: {
         simpleData: {
@@ -83,7 +165,8 @@ let setting = {
         dataFilter: nodeDataFilter
     },
     callback: {
-        onRightClick: contextMenu
+        onRightClick: contextMenu,
+        onClick: showDetail
     }
 };
 
@@ -172,7 +255,6 @@ class Page {
         this.contextMenuInit();
         this.copyAbsolutePath();
         this.addNewZK();
-        this.getNodeDetail();
     }
 
     contextMenuInit() {
@@ -358,55 +440,7 @@ class Page {
         })
     }
 
-    getNodeDetail() {
-        $('#getNodeDetail').off('click').on('click', function () {
-            $.ajax(api.get('getNodeDetail'), {
-                type: 'POST',
-                data: JSON.stringify({
-                    "absolutePath": contextMenuNodeInfo.treeNode.absolutePath,
-                    "zkAddress": contextMenuNodeInfo.treeNode.zkAddress
-                }),
-                contentType: 'application/json',
-                dataType: 'json',
-                cache: false,
-                async: true,
-                timeout: 30000,
-                success: function (data, textStatus, jqXHR) {
-                    if (data && data.code === "200") {
-                        BootstrapDialog.show({
-                            title: '节点详细信息',
-                            closable: true,
-                            draggable: true,
-                            message: function (dialog) {
-                                let $template = Handlebars.compile($("#HBS_ZK_node_info").html());
-                                let _html = $template(data.data);
-                                return _html;
-                            }
-                        })
-                    } else if (data && data.code === "303") {
-                        $.message({
-                            message: "获取ZK节点信息失败！！！" + data.message,
-                            type: "error"
-                        });
-                    } else {
-                        $.message({
-                            message: "获取ZK节点信息失败！！！",
-                            type: "error"
-                        });
-                    }
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    // 通常 textStatus 和 errorThrown 之中
-                    // 只有一个会包含信息
-                    $.message({
-                        message: "获取ZK节点信息失败！！！",
-                        type: "error"
-                    });
-                }
-            });
 
-        });
-    }
 
     addNewZK() {
         $('#addZK').off('click').on('click', function () {
@@ -541,7 +575,7 @@ let zNodes = [
         "absolutePath": "/",
         "name": "/",
         "parentAbsolutePath": "/",
-        "zkAddress": "127.0.0.1:2183",
+        "zkAddress": "127.0.0.1:2181",
         "isParent": true
     },
 

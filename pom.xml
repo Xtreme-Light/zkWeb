@@ -43,7 +43,7 @@
             </snapshots>
         </repository>
         <repository>
-            <id>spring</id>
+            <id>spring-plugin</id>
             <url>https://maven.aliyun.com/repository/spring-plugin</url>
             <releases>
                 <enabled>true</enabled>

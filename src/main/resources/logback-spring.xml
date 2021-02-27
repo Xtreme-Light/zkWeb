@@ -47,7 +47,7 @@
             <appender-ref ref="file"/>
         </appender>
 
-        <logger name="com.ai" level="DEBUG"/>
+        <logger name="com.giligency" level="DEBUG"/>
         <logger name="org.springframework" level="INFO"/>
 
         <root level="INFO">
